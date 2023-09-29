@@ -3,41 +3,60 @@ import { Link } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  updateProfile,
 } from "firebase/auth";
 import { auth } from "../../firebase/firebase.config";
 import { useState } from "react";
+import { Helmet } from "react-helmet";
 
 const Register = () => {
   const [user, setUser] = useState(null);
   const [showPassword, setPassword] = useState(false);
-  const [accepted, setAccepted] = useState(false);
-
-  console.log(accepted);
+  const [error, setError] = useState(null);
+  console.log(user);
 
   const handleRegisterSubmit = (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
     const username = e.target.username.value;
-    setAccepted(e.target.terms.checked);
 
-    console.log(accepted);
+    const termAccepted = e.target.terms.checked;
+
+    if (!termAccepted) {
+      setError("Please Accept our terms and condition");
+      return;
+    } else if (password.length < 6) {
+      setError("Password must have 6 character");
+      return;
+    } else if (!/[A-Z]/.test(password)) {
+      setError("give atleast one Character");
+      return;
+    }
 
     console.log(email, password, username);
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
         setUser(result.user);
 
+        updateProfile(result.user, {});
+
         sendEmailVerification(result.user).then(() =>
           alert("Please Check Your Email")
         );
       })
-      .catch((error) => error.message);
+      .catch((error) => setError(error.message));
     e.target.reset();
+
+    setError(null);
   };
 
   return (
     <>
+      <Helmet>
+        <title>Register</title>
+      </Helmet>
+
       <div className="bg-gray-100 flex h-screen  items-center  justify-center px-4 sm:px-6  lg:px-8">
         <div className="w-full -mt-24 max-w-md space-y-8">
           <div className="bg-white shadow-md rounded-md p-6">
@@ -119,6 +138,7 @@ const Register = () => {
                   </Link>
                 </label>
               </div>
+              <div>{error && <p className="text-red-400 ">{error}</p>}</div>
               <div>
                 <button
                   type="submit"
