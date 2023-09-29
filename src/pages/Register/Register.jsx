@@ -1,6 +1,41 @@
+import { BsEyeSlash, BsEyeFill } from "react-icons/bs";
 import { Link } from "react-router-dom";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
+import { auth } from "../../firebase/firebase.config";
+import { useState } from "react";
 
 const Register = () => {
+  const [user, setUser] = useState(null);
+  const [showPassword, setPassword] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+
+  console.log(accepted);
+
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    const username = e.target.username.value;
+    setAccepted(e.target.terms.checked);
+
+    console.log(accepted);
+
+    console.log(email, password, username);
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((result) => {
+        setUser(result.user);
+
+        sendEmailVerification(result.user).then(() =>
+          alert("Please Check Your Email")
+        );
+      })
+      .catch((error) => error.message);
+    e.target.reset();
+  };
+
   return (
     <>
       <div className="bg-gray-100 flex h-screen  items-center  justify-center px-4 sm:px-6  lg:px-8">
@@ -16,7 +51,7 @@ const Register = () => {
               Sign up for Account
             </h2>
 
-            <htmlForm className="space-y-6" method="POST">
+            <form onSubmit={handleRegisterSubmit} className="space-y-6">
               <div>
                 <label
                   htmlFor="new-password"
@@ -27,7 +62,7 @@ const Register = () => {
                 <div className="mt-1">
                   <input
                     name="username"
-                    type="username"
+                    type="text"
                     required
                     className="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm"
                   />
@@ -44,10 +79,10 @@ const Register = () => {
                 <div className="mt-1">
                   <input
                     name="email"
-                    type="email-address"
-                    autoComplete="email-address"
-                    required
+                    type="email"
+                    // autoComplete="email-address"
                     className="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm"
+                    required
                   />
                 </div>
               </div>
@@ -59,17 +94,31 @@ const Register = () => {
                 >
                   Password
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <input
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoComplete="password"
                     required
                     className="px-2 py-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm"
                   />
+                  <span
+                    className="absolute top-4 right-4"
+                    onClick={() => setPassword(!showPassword)}
+                  >
+                    {showPassword ? <BsEyeSlash /> : <BsEyeFill />}
+                  </span>
                 </div>
               </div>
-
+              <div className="space-x-1">
+                <input type="checkbox" id="terms" name="terms" />
+                <label htmlFor="terms">
+                  Accept our{" "}
+                  <Link className="underline hover:text-green-500">
+                    Terms and Condition
+                  </Link>
+                </label>
+              </div>
               <div>
                 <button
                   type="submit"
@@ -84,7 +133,7 @@ const Register = () => {
                   Login
                 </Link>{" "}
               </p>
-            </htmlForm>
+            </form>
           </div>
         </div>
       </div>
