@@ -1,15 +1,14 @@
 import { BsEyeSlash, BsEyeFill } from "react-icons/bs";
 import { Link } from "react-router-dom";
-import {
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  updateProfile,
-} from "firebase/auth";
-import { auth } from "../../firebase/firebase.config";
-import { useState } from "react";
+import { sendEmailVerification, updateProfile } from "firebase/auth";
+
+import { useContext, useState } from "react";
 import { Helmet } from "react-helmet";
+import { AuthContext } from "../../context/AuthProvider/AuthProvider";
 
 const Register = () => {
+  const { createUser } = useContext(AuthContext);
+
   const [user, setUser] = useState(null);
   const [showPassword, setPassword] = useState(false);
   const [error, setError] = useState(null);
@@ -19,7 +18,7 @@ const Register = () => {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
-    const username = e.target.username.value;
+    // const username = e.target.username.value;
 
     const termAccepted = e.target.terms.checked;
 
@@ -34,10 +33,9 @@ const Register = () => {
       return;
     }
 
-    console.log(email, password, username);
-    createUserWithEmailAndPassword(auth, email, password)
+    createUser(email, password)
       .then((result) => {
-        setUser(result.user);
+        setUser(result);
 
         updateProfile(result.user, {});
 
